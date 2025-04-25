@@ -1,0 +1,5 @@
+# config/routes.yaml
+register:
+    path: /
+    controller: App\Controller\RegistrationController::register
+    methods: [GET, POST]
