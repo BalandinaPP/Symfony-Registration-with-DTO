@@ -4,53 +4,57 @@ namespace App\Controller;
 
 use App\DTO\RegisterUserDTO;
 use App\Entity\User;
+use App\Form\LoginType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Form\FormFactoryInterface;
 use Twig\Environment;
 
 class LoginController
 {
+    private EntityManagerInterface $em;
+    private UserPasswordHasherInterface $hasher;
+    private FormFactoryInterface $formFactory;
+    private Environment $twig;
+
     public function __construct(
-        private EntityManagerInterface $em,
-        private UserPasswordHasherInterface $hasher,
-        private ValidatorInterface $validator,
-        private Environment $twig
-    ) {}
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher,
+        FormFactoryInterface $formFactory,
+        Environment $twig
+    ) {
+        $this->em = $em;
+        $this->hasher = $hasher;
+        $this->formFactory = $formFactory;
+        $this->twig = $twig;
+    }
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(Request $request): Response
     {
         $dto = new RegisterUserDTO();
-        $errors = [];
+        $form = $this->formFactory->create(LoginType::class, $dto);
 
         if ($request->isMethod('POST')) {
-            $dto->email = $request->request->get('email');
-            $dto->password = $request->request->get('password');
+            $form->handleRequest($request);
 
-            $validationErrors = $this->validator->validate($dto);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $user = $this->em->getRepository(User::class)->findOneBy(['email' => $dto->email]);
 
-            if (count($validationErrors) > 0) {
-                return new Response($this->twig->render('login/index.html.twig', [
-                    'errors' => $validationErrors,
-                ]));
-            }
-
-            $user = $this->em->getRepository(User::class)->findOneBy(['email' => $dto->email]);
-
-            if (!$user || !$this->hasher->isPasswordValid($user, $dto->password)) {
-                $errors = 'Неверный email или пароль';
-            } else {
-                return new RedirectResponse('/welcome');
+                if (!$user || !$this->hasher->isPasswordValid($user, $dto->password)) {
+                    $form->addError(new FormError('Неверный email или пароль.'));
+                } else {
+                    return new RedirectResponse('/welcome');
+                }
             }
         }
 
         return new Response($this->twig->render('login/index.html.twig', [
-            'errors' => $errors
+            'form' => $form->createView(),
         ]));
     }
 }

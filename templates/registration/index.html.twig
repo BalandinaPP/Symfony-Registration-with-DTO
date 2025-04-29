@@ -16,15 +16,11 @@
     {% endif %}
 
     <form action="{{ path('app_register') }}" method="POST">
-        <div>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        <div>
-            <label for="password">Пароль:</label>
-            <input type="password" id="password" name="password" required minlength="6">
-        </div>
-        <button type="submit">Зарегистрироваться</button>
+        {{ form_start(form) }}
+        {{ form_row(form.email) }}
+        {{ form_row(form.password) }}
+        {{ form_row(form.submit) }}
+        {{ form_end(form) }}
     </form>
 
     <p>Уже есть аккаунт? <a href="{{ path('app_login') }}">Войти</a></p>

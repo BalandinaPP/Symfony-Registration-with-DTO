@@ -7,32 +7,19 @@
 <body>
     <h1>Вход</h1>
 
-    {# Ошибки валидации или авторизации #}
-    {% if errors is defined %}
-        {% if errors is iterable %}
-            <ul style="color: red;">
-                {% for error in errors %}
-                    <li>{{ error.message }}</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p style="color: red;">{{ errors }}</p>
-        {% endif %}
-    {% endif %}
-
-    <form method="POST" action="{{ path('app_login') }}">
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
-
-        <label for="password">Пароль:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-
-        <button type="submit">Войти</button>
+    {# Ошибки, если есть #}
+    {% for error in form.email.vars.errors %}
+        <div style="color: red;">{{ error.message }}</div>
+    {% endfor %}
+    {% for error in form.password.vars.errors %}
+        <div style="color: red;">{{ error.message }}</div>
+    {% endfor %}
+    <form action="{{ path('app_login') }}" method="POST">
+        {{ form_widget(form) }}
+        
     </form>
+    
 
-    <br>
-    <form action="{{ path('app_register') }}">
-        <button type="submit">Зарегистрироваться</button>
-    </form>
+    <p>Уже есть аккаунт? <a href="{{ path('app_register') }}">Зарегистрироваться</a></p>
 </body>
 </html>
