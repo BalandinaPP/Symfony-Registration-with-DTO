@@ -23,7 +23,7 @@ class LoginType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => RegisterUserDTO::class, // Маппинг формы на DTO
+            'data_class' => RegisterUserDTO::class, 
         ]);
     }
 }
